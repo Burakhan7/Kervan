@@ -37,6 +37,14 @@ var needles: Dictionary = {}
 var hiss: AudioStreamPlayer3D
 var click: AudioStreamPlayer
 var screw_index = 0
+var eye_home: Vector3
+var arms: Node3D
+var hand_pose: Array = []
+var gait = 0.0
+var gait_weight = 0.0
+var step_cos = 1.0
+var step_side = false
+var step_audio: AudioStreamPlayer
 
 func v3(a) -> Vector3:
  return Vector3(float(a[0]), float(a[1]), float(a[2]))
@@ -104,6 +112,7 @@ func _ready():
  add_child(click)
  click.stream=load("res://assetler/ses_tik.wav")
  click.volume_db=-13
+ build_hands()
  for i in range(8):
   var sp=data.spawns[i]
   var ang=float(i)*PI/4.0
@@ -155,7 +164,10 @@ func toggle_view():
  if exterior:
   exterior_cam.current=true
   info.visible=false
- else:eye.current=true
+  rest_view()
+ else:
+  eye.current=true
+  if arms:arms.visible=true
  focus_id=""
 
 func _unhandled_input(ev):
@@ -209,9 +221,11 @@ func _physics_process(dt):
   elif player.velocity.y<0:player.velocity.y=0
   player.move_and_slide()
   if player.global_position.y < -4:jump_room(room_id)
+  walk_feel(dt)
  else:
   exterior_cam.position=Vector3(cos(orbit)*cos(elevation),sin(elevation),sin(orbit)*cos(elevation))*radius+Vector3.UP
   exterior_cam.look_at(Vector3.UP,Vector3.UP)
+  rest_view()
  for key in locks:
   var d=locks[key]
   var next=move_toward(float(d.amount),1.0 if d.open else 0.0,dt*2.3)
@@ -429,3 +443,139 @@ func use_target(k):
   "capsule":say("Tek kişilik tahliye kapsülü. Koltuk, bağımsız itki ve servis kapağı hazır.")
   "meal":say("Altı kişilik vardiya masası. Koridor altı ayrı kamaraya uzanıyor.")
   "cabin":say("Eren’in kamara terminali ve notu aynı bakışta. Sayaç: 00:00.")
+
+func suit_mat(color: Color, rough: float) -> StandardMaterial3D:
+ var m=StandardMaterial3D.new()
+ m.albedo_color=color
+ m.roughness=rough
+ m.metallic=0.0
+ return m
+
+func wear(parent: Node3D, mesh: Mesh, mat: Material, pos: Vector3, rot: Vector3) -> void:
+ var n=MeshInstance3D.new()
+ n.mesh=mesh
+ n.material_override=mat
+ n.position=pos
+ n.rotation=rot
+ n.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ parent.add_child(n)
+
+func build_hands() -> void:
+ eye_home=eye.position
+ arms=Node3D.new()
+ arms.name="Kollar"
+ eye.add_child(arms)
+ var sleeve=suit_mat(Color("24303c"),0.9)
+ var cuff=suit_mat(Color("141b22"),0.82)
+ var skin=suit_mat(Color("8d6248"),0.74)
+ var nail=suit_mat(Color("c9b09a"),0.58)
+ for side in [-1.0,1.0]:
+  var arm=Node3D.new()
+  arm.name="Sol" if side<0.0 else "Sag"
+  arms.add_child(arm)
+  arm.position=Vector3(0.38*side,-0.34,-0.62)
+  arm.rotation=Vector3(1.05,-0.22*side,0.1*side)
+  var fore=CylinderMesh.new()
+  fore.top_radius=0.034
+  fore.bottom_radius=0.046
+  fore.height=0.3
+  fore.radial_segments=10
+  wear(arm,fore,sleeve,Vector3(0.05*side,-0.07,0.13),Vector3(1.02,0.0,0.28*side))
+  var band=CylinderMesh.new()
+  band.top_radius=0.048
+  band.bottom_radius=0.048
+  band.height=0.036
+  band.radial_segments=10
+  wear(arm,band,cuff,Vector3(0.02*side,-0.028,0.045),Vector3(1.02,0.0,0.28*side))
+  var palm=BoxMesh.new()
+  palm.size=Vector3(0.108,0.04,0.12)
+  wear(arm,palm,skin,Vector3(0,-0.004,0.01),Vector3.ZERO)
+  for i in 4:
+   var finger=BoxMesh.new()
+   finger.size=Vector3(0.02,0.018,0.062)
+   var x=lerpf(-0.038,0.038,float(i)/3.0)
+   var spread=lerpf(-0.05,0.05,float(i)/3.0)
+   wear(arm,finger,skin,Vector3(x,0.004,-0.084),Vector3(0.35,spread,0))
+   var tip=BoxMesh.new()
+   tip.size=Vector3(0.018,0.014,0.026)
+   wear(arm,tip,nail,Vector3(x+spread*0.02,0.0,-0.124),Vector3(0.55,spread,0))
+  var thumb=BoxMesh.new()
+  thumb.size=Vector3(0.022,0.018,0.05)
+  wear(arm,thumb,skin,Vector3(-0.06*side,-0.01,-0.02),Vector3(0.2,-0.9*side,0.35*side))
+  hand_pose.append({"node":arm,"pos":arm.position,"rot":arm.rotation})
+ step_audio=AudioStreamPlayer.new()
+ step_audio.name="Adim"
+ add_child(step_audio)
+ step_audio.stream=make_step()
+ step_audio.volume_db=-18
+
+func make_step() -> AudioStreamWAV:
+ var rate=22050
+ var count=int(rate*0.085)
+ var pcm=PackedByteArray()
+ pcm.resize(count*2)
+ var phase=0.0
+ var noise=0.0
+ for i in count:
+  var t=float(i)/float(rate)
+  var env=minf(1.0,t/0.0035)*exp(-t*34.0)
+  var freq=lerpf(190.0,46.0,clampf(t/0.05,0.0,1.0))
+  phase+=TAU*freq/float(rate)
+  var raw=float(((int(i)*1103515245+12345)>>16)&32767)/16383.5-1.0
+  noise=lerpf(noise,raw,0.2)
+  var sample=(sin(phase)*0.78+noise*0.22)*env
+  pcm.encode_s16(i*2,int(clampf(sample,-1.0,1.0)*15000.0))
+ var wav=AudioStreamWAV.new()
+ wav.format=AudioStreamWAV.FORMAT_16_BITS
+ wav.mix_rate=rate
+ wav.stereo=false
+ wav.data=pcm
+ return wav
+
+func rest_view() -> void:
+ gait_weight=0.0
+ step_cos=1.0
+ eye.position=eye_home
+ eye.rotation.z=0.0
+ if arms==null:return
+ arms.visible=false
+ arms.position=Vector3.ZERO
+ for pose in hand_pose:
+  var n=pose.node as Node3D
+  n.position=pose.pos
+  n.rotation=pose.rot
+
+func walk_feel(dt: float) -> void:
+ if arms==null:return
+ arms.visible=true
+ var pace=0.0
+ if player.is_on_floor():
+  var v=player.get_real_velocity()
+  pace=Vector2(v.x,v.z).length()
+ var moving=pace>0.35
+ gait_weight=move_toward(gait_weight,1.0 if moving else 0.0,dt*(4.2 if moving else 8.0))
+ if moving:
+  gait+=dt*clampf(pace/1.15,0.85,3.05)*PI
+ var wave=sin(gait)
+ var bob=sin(gait*2.0)
+ var speed_k=clampf(pace/4.6,0.0,1.0)
+ var amp=lerpf(0.012,0.022,speed_k)*gait_weight
+ eye.position=eye_home+Vector3(wave*amp*0.55,bob*amp,0.0)
+ eye.rotation.z=wave*0.016*gait_weight
+ arms.position=Vector3(0.0,-bob*amp*0.4,0.0)
+ var i=0
+ for pose in hand_pose:
+  var sign=-1.0 if i==0 else 1.0
+  var swing=wave*sign*gait_weight
+  var n=pose.node as Node3D
+  n.position=pose.pos+Vector3(swing*0.012,bob*0.012*gait_weight,-swing*0.032)
+  n.rotation=pose.rot+Vector3(swing*0.16,0.0,swing*-0.06)
+  i+=1
+ var c=cos(gait*2.0)
+ if moving and gait_weight>0.62 and step_cos<0.0 and c>=0.0:
+  step_audio.pitch_scale=0.94 if step_side else 1.07
+  step_side=not step_side
+  step_audio.volume_db=lerpf(-20.0,-15.0,speed_k)
+  step_audio.play()
+ if not moving:step_cos=1.0
+ else:step_cos=c
