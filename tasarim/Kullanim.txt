@@ -1,0 +1,41 @@
+KERVAN ARK-7  |  BASINÇ HALKASI
+
+Başlangıç
+ZIP arşivinin tamamını bir klasöre çıkar.
+
+Blender
+Blender/Kervan_ARK7.blend dosyasını aç. Sahne metre ölçeğindedir.
+Dosya dış kamera görünümüne yakın başlar. Outliner'daki “İç mekan / …” koleksiyonları sekiz bölmeyi; “Dış gövde / …” koleksiyonları zırhı, üst kaplamayı ve dış ekipmanı içerir. Bir odayı düzenlerken ilgili iç mekân koleksiyonunu seçip diğerlerini gizleyebilirsin. Sunum koleksiyonunda dış görünüş, üst görünüş ve sekiz bölme için kameralar vardır. Bir kamerayı seçip Ctrl + Numpad 0 ile etkinleştir. Yüzey yazıları, ekranlar ve kadranlar için kullanılan 4K atlas dosyaya gömülüdür.
+
+Godot
+Godot 4.x proje yöneticisinden İçe Aktar / Import seçeneğini kullanıp Godot/project.godot dosyasını seç. İlk açılışta GLB ve seslerin içe aktarılmasını bekle. F5 ile ana sahneyi çalıştır. İstasyonun görünür geometrisi Godot/assetler/Kervan_ARK7.glb içinde, sabit çarpışmalar carpisma.tscn içinde, etkileşim konumları ve kapı hareketleri gorevler.json içindedir.
+
+Kontroller
+W A S D     Yürü                         Fare       Bak
+Shift       Hızlı yürü                   E          Hedefteki parçayı kullan
+F           El feneri                    H          Yardımı aç/kapat
+Tab         Dış görünüş / güverte         Tekerlek   Dış görünüş mesafesi
+Esc         Fareyi bırak                 Sol tık    Fareyi geri yakala
+
+Sayı tuşları yürüyüş turunda hızlı bölme seçer.
+1 Köprü  /  2 Reaktör  /  3 Kargo  /  4 Hava Kilidi
+5 İletişim  /  6 Yaşam Alanı ve Kamaralar  /  7 Revir  /  8 Yaşam Desteği
+
+Halka güvertesi
+Bu sıralama halkanın fiziksel komşuluğudur. Son bölme tekrar Köprü'ye bağlanır. İç kenardaki şerit, bölüm kapılarının önünden geçen ortak yürüyüş yoludur. Halkanın iç çapraz kafesi servis taşıyıcısıdır. Yaşam Alanı'nın dış tarafındaki basınç modülünde altı ayrı kişisel kamara vardır.
+
+Görev donanımını dene
+• Hava Kilidi. İç basınç kapısını aç, içeri gir ve arkandan kapat. Raflardan EVA kıyafetini alıp dış kapağı aç. Güverteden çanağa ilerle. Röleyi incele, modülü tak ve üç vidayı gövde üzerindeki sırayla kullan. Aynı platformda tek kişilik tahliye kapsülünün kapağı bulunur.
+• Yaşam Desteği. Üç ibreyi izle, tıslayan hattı bul ve vanayı iki kademede kapat. Sol hat reviri besler. Conta, yer ızgarasındaki not, iki kartuş yuvası, yedek rafı ve kart kaydı ayrı noktalardadır. Nötr kartuşu Revir'den getirip yıkayıcıda kullanabilirsin.
+• Revir. Eşik paneli çift kayıt içindir. Kart hareketini önce Yaşam Desteği'nde oku, sonra kayıtları Revir'de eşleştir. Nötr kartuş sedyenin karşısındaki tezgâhtadır.
+• Kargo. Dış pervazdaki sigorta kolunu tut, etiketi KARGO olan yuvayı seç ve kolu bırak. Hatalı sıralama gecikmeye yol açar. Hat döndüğünde manuel kolu kullanma kararı ayrıdır. Pano dibindeki mektup ayrıca incelenebilir.
+• İletişim. Konsolda oturum, saat ve kapı kayıtlarını incele. Kapılı atölyedeki silik sıfırları ve not rayını bul. Fotoğraf ve kopya, tur içindeki saha kaydına eklenir.
+• Yaşam Alanı. Altı kişilik masanın arkasından kamara koridoruna geç. Eren'in kişisel masasını, sayacını ve Viktor'un delil dolabını incele.
+• Köprü. Fiziksel delil tepsileri, Madde 9 ekranı ve komuta konsolları vardır. Güç panosundaki müdahaleyi tespit ettikten sonra delil masasını tekrar incele.
+• Reaktör. Üç vana kapalı başlar. İbresi düşen hattı yarım aç ve diğer iki hattı kapalı tut. Kalibrasyon konsolunu kullan. Bakım defterinde Viktor'un el yazısı bulunur.
+
+Kapsam
+Bu sürüm istasyon modeli ve birinci şahıs etkileşim prototipidir. Kapılar, vana ve ibre hareketleri, sesli kaçak, kartuş, röle, güç panosu ve delil inceleme durumları tur boyunca çalışacak şekilde kurulmuştur. Oyunu yeniden başlatmak tur durumunu sıfırlar. Mürettebat karakterleri, güven ve diyalog sistemi, beş perdeli görev yönetimi, mahkeme oylaması ve sonlar ayrı oyun katmanlarıdır. Kargo kurtarma sonucu metinle temsil edilir.
+
+Düzenleme
+Gövdeyi Blender'da değiştirirsen Godot'a yeni GLB aktarabilirsin. Kapı kanatlarının, ibrelerin ve vanaların nesne adları etkileşim verisinde kullanılır. Duvarları veya görev parçalarını taşıdığında ilgili çarpışma ve etkileşim noktalarını aynı konuma güncelle.

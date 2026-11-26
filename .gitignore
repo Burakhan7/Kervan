@@ -1,0 +1,12 @@
+# Godot generated files
+.godot/
+.import/
+export_credentials.cfg
+# Blender backup files
+*.blend1
+*.blend2
+# Local builds and operating system metadata
+build/
+exports/
+.DS_Store
+Thumbs.db

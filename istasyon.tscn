@@ -1,0 +1,47 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://assetler/Kervan_ARK7.glb" id="1"]
+[ext_resource type="PackedScene" path="res://carpisma.tscn" id="2"]
+[ext_resource type="Script" path="res://istasyon.gd" id="3"]
+
+[ext_resource type="Shader" path="res://uzay.gdshader" id="4"]
+
+[sub_resource type="ShaderMaterial" id="SkyMat"]
+shader = ExtResource("4")
+
+[sub_resource type="Sky" id="Stars"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="CapsuleShape3D" id="OyuncuSekli"]
+radius = 0.28
+height = 1.70
+
+[sub_resource type="Environment" id="Uzay"]
+background_mode = 2
+sky = SubResource("Stars")
+background_color = Color(0.011, 0.024, 0.036, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.79, 0.86, 0.9, 1)
+ambient_light_energy = 0.88
+
+[node name="Kervan" type="Node3D"]
+script = ExtResource("3")
+[node name="IstasyonModeli" parent="." instance=ExtResource("1")]
+[node name="Carpisma" parent="." instance=ExtResource("2")]
+[node name="Uzay" type="WorldEnvironment" parent="."]
+environment = SubResource("Uzay")
+[node name="Gunes" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.79, -0.64, -0.12)
+light_color = Color(0.94, 0.95, 1, 1)
+light_energy = 0.54
+[node name="Eren" type="CharacterBody3D" parent="."]
+floor_snap_length = 0.22
+[node name="Kapsul" type="CollisionShape3D" parent="Eren"]
+position = Vector3(0, 0.85, 0)
+shape = SubResource("OyuncuSekli")
+[node name="Bakis" type="Camera3D" parent="Eren"]
+position = Vector3(0, 1.58, 0)
+fov = 75.0
+near = 0.045
+far = 250.0
+current = true
