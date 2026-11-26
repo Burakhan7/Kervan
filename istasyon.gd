@@ -453,11 +453,8 @@ func build_hands() -> void:
  arms.add_child(model)
  var sol=model.find_child("Sol",true,false) as MeshInstance3D
  var sag=model.find_child("Sag",true,false) as MeshInstance3D
- model.remove_child(sol)
- model.remove_child(sag)
- arms.add_child(sol)
- arms.add_child(sag)
- arms.remove_child(model)
+ sol.reparent(arms)
+ sag.reparent(arms)
  model.free()
  sol.position=Vector3(-0.32,-0.16,-0.50)
  sol.rotation=Vector3(0.75,0.20,-0.06)
