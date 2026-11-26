@@ -444,65 +444,28 @@ func use_target(k):
   "meal":say("Altı kişilik vardiya masası. Koridor altı ayrı kamaraya uzanıyor.")
   "cabin":say("Eren’in kamara terminali ve notu aynı bakışta. Sayaç: 00:00.")
 
-func suit_mat(color: Color, rough: float) -> StandardMaterial3D:
- var m=StandardMaterial3D.new()
- m.albedo_color=color
- m.roughness=rough
- m.metallic=0.0
- return m
-
-func wear(parent: Node3D, mesh: Mesh, mat: Material, pos: Vector3, rot: Vector3) -> void:
- var n=MeshInstance3D.new()
- n.mesh=mesh
- n.material_override=mat
- n.position=pos
- n.rotation=rot
- n.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
- parent.add_child(n)
-
 func build_hands() -> void:
  eye_home=eye.position
  arms=Node3D.new()
  arms.name="Kollar"
  eye.add_child(arms)
- var sleeve=suit_mat(Color("24303c"),0.9)
- var cuff=suit_mat(Color("141b22"),0.82)
- var skin=suit_mat(Color("8d6248"),0.74)
- var nail=suit_mat(Color("c9b09a"),0.58)
- for side in [-1.0,1.0]:
-  var arm=Node3D.new()
-  arm.name="Sol" if side<0.0 else "Sag"
-  arms.add_child(arm)
-  arm.position=Vector3(0.38*side,-0.34,-0.62)
-  arm.rotation=Vector3(1.05,-0.22*side,0.1*side)
-  var fore=CylinderMesh.new()
-  fore.top_radius=0.034
-  fore.bottom_radius=0.046
-  fore.height=0.3
-  fore.radial_segments=10
-  wear(arm,fore,sleeve,Vector3(0.05*side,-0.07,0.13),Vector3(1.02,0.0,0.28*side))
-  var band=CylinderMesh.new()
-  band.top_radius=0.048
-  band.bottom_radius=0.048
-  band.height=0.036
-  band.radial_segments=10
-  wear(arm,band,cuff,Vector3(0.02*side,-0.028,0.045),Vector3(1.02,0.0,0.28*side))
-  var palm=BoxMesh.new()
-  palm.size=Vector3(0.108,0.04,0.12)
-  wear(arm,palm,skin,Vector3(0,-0.004,0.01),Vector3.ZERO)
-  for i in 4:
-   var finger=BoxMesh.new()
-   finger.size=Vector3(0.02,0.018,0.062)
-   var x=lerpf(-0.038,0.038,float(i)/3.0)
-   var spread=lerpf(-0.05,0.05,float(i)/3.0)
-   wear(arm,finger,skin,Vector3(x,0.004,-0.084),Vector3(0.35,spread,0))
-   var tip=BoxMesh.new()
-   tip.size=Vector3(0.018,0.014,0.026)
-   wear(arm,tip,nail,Vector3(x+spread*0.02,0.0,-0.124),Vector3(0.55,spread,0))
-  var thumb=BoxMesh.new()
-  thumb.size=Vector3(0.022,0.018,0.05)
-  wear(arm,thumb,skin,Vector3(-0.06*side,-0.01,-0.02),Vector3(0.2,-0.9*side,0.35*side))
-  hand_pose.append({"node":arm,"pos":arm.position,"rot":arm.rotation})
+ var model=(load("res://assetler/Eren_Kollar.glb") as PackedScene).instantiate()
+ arms.add_child(model)
+ var sol=model.find_child("Sol",true,false) as MeshInstance3D
+ var sag=model.find_child("Sag",true,false) as MeshInstance3D
+ model.remove_child(sol)
+ model.remove_child(sag)
+ arms.add_child(sol)
+ arms.add_child(sag)
+ arms.remove_child(model)
+ model.free()
+ sol.position=Vector3(-0.32,-0.16,-0.50)
+ sol.rotation=Vector3(0.75,0.20,-0.06)
+ sag.position=Vector3(0.32,-0.16,-0.50)
+ sag.rotation=Vector3(0.75,-0.20,0.06)
+ for node in [sol,sag]:
+  node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+  hand_pose.append({"node":node,"pos":node.position,"rot":node.rotation})
  step_audio=AudioStreamPlayer.new()
  step_audio.name="Adim"
  add_child(step_audio)
