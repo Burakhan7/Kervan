@@ -1,0 +1,7 @@
+Mehmet,
+
+Kol ve gövde modellerini (Blender veya GLB) bu klasöre bırak.
+Dosya adlarını olduğu gibi koru.
+
+Modeller oyuna bağlanana kadar bunları assetler/ veya Blender/ içine koyma.
+Godot bu klasörü içe aktarmaz.
